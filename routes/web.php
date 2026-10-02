@@ -151,14 +151,22 @@ Route::middleware('auth')->group(function () {
     Route::get('documentacion', [DocumentacionController::class, 'index'])->name('documentacion.index');
 });
 
-// Ruta de entrega directa de archivos de storage (soporte multiplataforma y Windows)
+// Ruta de entrega directa de archivos de storage (soporte multiplataforma y hosting compartido)
 Route::get('storage/{path}', function (string $path) {
-    $fullPath = storage_path('app/public/'.$path);
-    if (! file_exists($fullPath)) {
-        abort(404);
+    $candidates = [
+        storage_path('app/public/'.$path),
+        storage_path($path),
+        public_path('storage/'.$path),
+        base_path('storage/'.$path),
+    ];
+
+    foreach ($candidates as $fullPath) {
+        if (file_exists($fullPath) && ! is_dir($fullPath)) {
+            return response()->file($fullPath);
+        }
     }
 
-    return response()->file($fullPath);
+    abort(404);
 })->where('path', '.*')->name('storage.file');
 
 Route::get('public/storage/{path}', function (string $path) {
