@@ -160,3 +160,7 @@ Route::get('storage/{path}', function (string $path) {
 
     return response()->file($fullPath);
 })->where('path', '.*')->name('storage.file');
+
+Route::get('public/storage/{path}', function (string $path) {
+    return redirect('storage/'.$path);
+})->where('path', '.*');
